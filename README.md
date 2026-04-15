@@ -1,44 +1,40 @@
 # Multi-Tape Turing Machine Visualizer
 
-This is a web-based **Multi-Tape Turing Machine Simulator** built to make computational theory easier to understand and visualize. It helps display how read/write heads move across multiple tapes in real-time.
+![Theoretical Computation](https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200)
 
-## Features
+## Overview
 
-* **Multi-Tape Architecture**: Simulates complex Turing Machines with multiple independent tapes.
-* **Interactive Visualization**: Watch read/write heads shift across the tapes as the machine executes steps.
-* **State Diagrams**: Automatically generates animated state transition diagrams using React Flow, which can be exported as images.
-* **Built-in Examples**: Includes pre-configured problems (like binary addition or palindrome checking) to see the engine in action quickly.
-* **Metrics**: Tracks execution speed, total steps taken, and overall machine efficiency during runtime.
+This project is a web-based Multi-Tape Turing Machine Simulator. It is designed to visualize the internal mechanics of computational theory, making abstract concepts accessible and visually engaging. By providing a live, simulated environment, users can observe how read/write heads interact with multiple simultaneous tapes to solve complex algorithms.
 
-## Technology Stack
+## Theoretical Background
 
-* **Frontend**: React 19 + TypeScript
-* **Build Tool**: Vite
-* **Styling**: Tailwind CSS integration
-* **Animations**: Framer Motion
-* **Node Visualization**: `@xyflow/react` for state diagrams
+### The Turing Machine
+A Turing Machine is a mathematical model of computation introduced by Alan Turing in 1936. It consists of an infinite tape divided into discrete cells, a read/write head that scans the tape, and a finite state control that determines the machine's actions. Despite its simplicity, a Turing Machine is capable of simulating any computer algorithm and forms the foundational basis for modern computer science.
 
-## Setup Instructions
+### Multi-Tape Extension
+A Multi-Tape Turing Machine is a variant that features multiple tapes, each with its own independent read/write head. While mathematically equivalent in computational power to a standard single-tape machine, a multi-tape architecture is significantly more efficient for solving complex problems. It allows algorithms like binary addition, copying, and palindrome checking to be executed in fewer steps by managing separate streams of data simultaneously.
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/tavishraj/Multi-Tape-TM-Visualizer.git
-   cd Multi-Tape-TM-Visualizer
-   ```
+![Computational Architecture](https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1200)
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+## Core Features
 
-3. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
+* **Multi-Tape Architecture**: Simulates complex Turing Machines with multiple independent tapes and heads.
+* **Live Tape Visualization**: Observe character reading, writing, and head shifting across tapes during algorithmic execution.
+* **Dynamic State Diagrams**: Automatically constructs animated state transition diagrams mapping the logic of the machine.
+* **Built-in Examples**: Includes pre-configured computational problems such as binary addition and palindrome checking.
+* **Export Capabilities**: Allows users to export high-resolution diagrams of the machine's finite state automaton.
 
-## How It Works
+## Technology Stack and Tools
 
-The engine dynamically processes a Turing Machine's configuration—states, alphabet, blank symbols, and the transition function—and translates those computational steps into visual nodes and tape shifts. Using the Metrics Panel, you monitor the steps and state changes live.
+This application is built with modern web technologies focused on performance and dynamic visualization:
+
+* **React 19**: Core frontend library for building the user interface.
+* **TypeScript**: Provides strong static typing ensuring the mathematical engine runs without structural errors.
+* **Vite**: High-performance build tool and development server.
+* **Tailwind CSS**: Utility-first CSS framework used for styling the dark-mode aesthetic.
+* **Framer Motion**: Animation library powering the smooth transitions of the tapes and read/write heads.
+* **XYFlow**: Node-based visualization library utilized for generating the interactive State Transition Diagrams.
+* **HTML-to-Image**: Tool utilized to locally render and export the state diagrams into PNG metrics.
 
 ---
 
