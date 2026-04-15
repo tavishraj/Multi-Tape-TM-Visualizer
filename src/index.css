@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────
+   BASE: Deep dark cyberpunk theme
+   ────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #0a0a0f;
+  color: #e2e8f0;
+  overflow-x: hidden;
+}
+
+/* ──────────────────────────────────────────────
+   CUSTOM CURSOR: Cyberpunk crosshair
+   ────────────────────────────────────────────── */
+
+html {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='3' stroke='%2300e5ff' stroke-width='1.5' fill='none' opacity='0.9'/%3E%3Cline x1='12' y1='0' x2='12' y2='7' stroke='%2300e5ff' stroke-width='0.8' opacity='0.6'/%3E%3Cline x1='12' y1='17' x2='12' y2='24' stroke='%2300e5ff' stroke-width='0.8' opacity='0.6'/%3E%3Cline x1='0' y1='12' x2='7' y2='12' stroke='%2300e5ff' stroke-width='0.8' opacity='0.6'/%3E%3Cline x1='17' y1='12' x2='24' y2='12' stroke='%2300e5ff' stroke-width='0.8' opacity='0.6'/%3E%3C/svg%3E") 12 12, crosshair;
+}
+
+button, select, a, [role="button"] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='4' stroke='%23ff00ff' stroke-width='1.5' fill='rgba(255,0,255,0.1)' opacity='0.9'/%3E%3Cline x1='12' y1='2' x2='12' y2='6' stroke='%23ff00ff' stroke-width='1' opacity='0.7'/%3E%3Cline x1='12' y1='18' x2='12' y2='22' stroke='%23ff00ff' stroke-width='1' opacity='0.7'/%3E%3Cline x1='2' y1='12' x2='6' y2='12' stroke='%23ff00ff' stroke-width='1' opacity='0.7'/%3E%3Cline x1='18' y1='12' x2='22' y2='12' stroke='%23ff00ff' stroke-width='1' opacity='0.7'/%3E%3C/svg%3E") 12 12, pointer;
+}
+
+/* ──────────────────────────────────────────────
+   SCROLLBAR: Cyberpunk thin scrollbar
+   ────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.4);
+}
+
+/* ──────────────────────────────────────────────
+   SELECTION: Neon selection colors
+   ────────────────────────────────────────────── */
+
+::selection {
+  background: rgba(34, 211, 238, 0.25);
+  color: #e0f7ff;
+}
+
+/* ──────────────────────────────────────────────
+   REACT FLOW OVERRIDES
+   ────────────────────────────────────────────── */
+
+.react-flow__node {
+  cursor: grab !important;
+}
+
+.react-flow__node:active {
+  cursor: grabbing !important;
+}
+
+.react-flow__edge-text {
+  pointer-events: none;
+}
+
+.react-flow__controls button {
+  background: #12121e !important;
+  border-color: rgba(34, 211, 238, 0.15) !important;
+  color: #22d3ee !important;
+  fill: #22d3ee !important;
+}
+
+.react-flow__controls button:hover {
+  background: rgba(34, 211, 238, 0.1) !important;
+}
+
+.react-flow__controls button svg {
+  fill: #22d3ee !important;
+}
+
+.react-flow__minimap {
+  background: #0a0a0f !important;
+}
+
+.react-flow__background pattern line,
+.react-flow__background pattern circle {
+  stroke: rgba(34, 211, 238, 0.04) !important;
+}
+
+/* ──────────────────────────────────────────────
+   ANIMATIONS
+   ────────────────────────────────────────────── */
+
+@keyframes neon-pulse {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(34, 211, 238, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.5), 0 0 40px rgba(34, 211, 238, 0.2);
+  }
+}
+
+@keyframes glow-text {
+  0%, 100% {
+    text-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    text-shadow: 0 0 15px currentColor, 0 0 30px currentColor;
+  }
+}
+
+/* ──────────────────────────────────────────────
+   SELECT DROPDOWN STYLING
+   ────────────────────────────────────────────── */
+
+select option {
+  background: #12121e;
+  color: #a5f3fc;
+  padding: 8px;
+}
