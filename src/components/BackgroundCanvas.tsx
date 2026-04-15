@@ -40,13 +40,13 @@ export default function BackgroundCanvas() {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8,
         text: isSymbol
           ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]
           : Array.from({ length: Math.floor(Math.random() * 6) + 3 }, () => BINARY[Math.floor(Math.random() * 2)]).join(''),
         size: isSymbol ? 14 + Math.random() * 10 : 10 + Math.random() * 4,
-        opacity: 0.04 + Math.random() * 0.08,
+        opacity: 0.15 + Math.random() * 0.25,
         type: isSymbol ? 'symbol' : 'binary',
       });
     }
@@ -64,8 +64,8 @@ export default function BackgroundCanvas() {
 
       for (const p of particles) {
         // Subtle parallax based on cursor
-        const dx = (mouse.x - canvas.width / 2) * 0.0003;
-        const dy = (mouse.y - canvas.height / 2) * 0.0003;
+        const dx = (mouse.x - canvas.width / 2) * 0.0015;
+        const dy = (mouse.y - canvas.height / 2) * 0.0015;
 
         p.x += p.vx + dx;
         p.y += p.vy + dy;
@@ -78,14 +78,14 @@ export default function BackgroundCanvas() {
 
         // Distance from cursor for glow effect
         const dist = Math.sqrt((p.x - mouse.x) ** 2 + (p.y - mouse.y) ** 2);
-        const glow = Math.max(0, 1 - dist / 300) * 0.15;
+        const glow = Math.max(0, 1 - dist / 400) * 0.6;
 
         ctx.save();
         ctx.font = `${p.size}px "Fira Code", monospace`;
         ctx.fillStyle =
           p.type === 'symbol'
             ? `rgba(0, 255, 255, ${p.opacity + glow})`
-            : `rgba(180, 120, 255, ${p.opacity * 0.7 + glow * 0.5})`;
+            : `rgba(180, 120, 255, ${p.opacity * 0.7 + glow * 0.8})`;
         ctx.shadowColor = p.type === 'symbol' ? 'rgba(0, 255, 255, 0.3)' : 'rgba(180, 120, 255, 0.2)';
         ctx.shadowBlur = glow > 0.02 ? 15 : 0;
         ctx.fillText(p.text, p.x, p.y);

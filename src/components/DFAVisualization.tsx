@@ -276,21 +276,21 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
         source: from,
         target: to,
         type: 'smoothstep',
-        animated: isActive,
+        animated: false,
         label: combinedLabel,
-        labelBgPadding: [8, 4] as [number, number],
+        labelBgPadding: [12, 6] as [number, number],
         labelBgBorderRadius: 6,
         labelBgStyle: {
           fill: '#0c0c16',
           fillOpacity: 0.95,
-          stroke: isActive ? 'rgba(34,211,238,0.3)' : 'rgba(100,116,139,0.15)',
-          strokeWidth: 1,
+          stroke: isActive ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.25)',
+          strokeWidth: 1.5,
         },
         labelStyle: {
           fontFamily: '"Fira Code", monospace',
-          fontSize: 8,
-          fill: isActive ? '#67e8f9' : '#64748b',
-          fontWeight: isActive ? 600 : 400,
+          fontSize: 11,
+          fill: isActive ? '#67e8f9' : '#94a3b8',
+          fontWeight: isActive ? 700 : 500,
         },
         style: {
           stroke: isActive
@@ -298,7 +298,8 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
             : isSelfLoop
             ? 'rgba(168,85,247,0.35)'
             : 'rgba(100,116,139,0.3)',
-          strokeWidth: isActive ? 2 : 1.2,
+          strokeWidth: isActive ? 3 : 1.5,
+          filter: isActive ? 'drop-shadow(0 0 5px rgba(34,211,238,0.7))' : 'none',
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
@@ -330,15 +331,15 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
         const isSelfLoop = e.source === e.target;
         return {
           ...e,
-          animated: isActive,
+          animated: false,
           labelStyle: {
             ...(e.labelStyle as object),
-            fill: isActive ? '#67e8f9' : '#64748b',
-            fontWeight: isActive ? 600 : 400,
+            fill: isActive ? '#67e8f9' : '#94a3b8',
+            fontWeight: isActive ? 700 : 500,
           },
           labelBgStyle: {
             ...(e.labelBgStyle as object),
-            stroke: isActive ? 'rgba(34,211,238,0.3)' : 'rgba(100,116,139,0.15)',
+            stroke: isActive ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.25)',
           },
           style: {
             stroke: isActive
@@ -346,7 +347,8 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
               : isSelfLoop
               ? 'rgba(168,85,247,0.35)'
               : 'rgba(100,116,139,0.3)',
-            strokeWidth: isActive ? 2 : 1.2,
+            strokeWidth: isActive ? 3 : 1.5,
+            filter: isActive ? 'drop-shadow(0 0 5px rgba(34,211,238,0.7))' : 'none',
           },
           markerEnd: {
             type: MarkerType.ArrowClosed,
@@ -399,7 +401,7 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
   }
 
   return (
-    <div className="relative h-full rounded-xl overflow-hidden border border-cyan-500/10">
+    <div className="relative h-full rounded-xl overflow-hidden border border-cyan-500/20 bg-[#0a0a0f]/85 backdrop-blur-lg shadow-lg shadow-cyan-900/10">
       {/* Export Button */}
       <button
         onClick={handleExport}
