@@ -44,7 +44,7 @@ function ControlButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`px-4 py-2.5 rounded-lg border font-semibold text-sm transition-all duration-200
+      className={`px-3 py-1.5 rounded-lg border font-semibold text-xs transition-all duration-200
                   disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:shadow-none
                   ${colors[accent]} bg-transparent backdrop-blur-sm`}
       style={{ fontFamily: '"Inter", sans-serif' }}
@@ -69,7 +69,7 @@ export default function ControlCenter({
   const isDone = simStatus === 'done';
 
   return (
-    <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-[#0d0d15]/80 border border-cyan-500/10 backdrop-blur-md">
+    <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-xl bg-[#0d0d15]/80 border border-cyan-500/10 backdrop-blur-md">
       {/* Transport Controls */}
       <div className="flex items-center gap-2">
         <ControlButton
@@ -116,7 +116,7 @@ export default function ControlCenter({
       </div>
 
       {/* Divider */}
-      <div className="w-px h-8 bg-cyan-500/20 mx-1" />
+      <div className="w-px h-6 bg-cyan-500/20 mx-1" />
 
       {/* Speed Selector */}
       <div className="flex items-center gap-2">
@@ -128,7 +128,7 @@ export default function ControlCenter({
             <button
               key={opt.value}
               onClick={() => setSpeed(opt.value)}
-              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all duration-200 border
+              className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all duration-200 border
                 ${
                   speed === opt.value
                     ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_10px_rgba(0,255,255,0.2)]'
