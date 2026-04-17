@@ -24,6 +24,80 @@ A Multi-Tape Turing Machine is a variant that features multiple tapes, each with
 * **Built-in Examples**: Includes pre-configured computational problems such as binary addition and palindrome checking.
 * **Export Capabilities**: Allows users to export high-resolution diagrams of the machine's finite state automaton.
 
+## Project Structure
+
+```
+Multi-Tape-TM-Visualizer/
+├── public/                     # Static assets
+├── src/
+│   ├── components/
+│   │   ├── BackgroundCanvas.tsx     # Animated cyberpunk background
+│   │   ├── ControlCenter.tsx        # Play/Pause/Step/Reset controls & speed selector
+│   │   ├── DFAVisualization.tsx     # State transition diagram (React Flow + Framer Motion)
+│   │   ├── Dashboard.tsx            # Main layout orchestrating all components
+│   │   ├── ExampleSelector.tsx      # Dropdown to load built-in TM examples
+│   │   ├── MetricsPanel.tsx         # Current state, steps, head values, status display
+│   │   ├── TapeView.tsx             # Multi-tape visualization with animated heads
+│   │   └── TransitionLog.tsx        # Step-by-step execution log
+│   ├── engine/
+│   │   ├── TuringMachine.ts         # Core TM computation engine (step, reset, snapshot)
+│   │   ├── examples.ts              # 10 built-in TM definitions
+│   │   └── types.ts                 # TypeScript interfaces (TMDefinition, Transition, etc.)
+│   ├── hooks/
+│   │   └── useTuringMachine.ts      # React hook managing TM state & simulation loop
+│   ├── App.tsx                      # Root component
+│   ├── main.tsx                     # Entry point
+│   └── index.css                    # Global styles, animations, custom cursor
+├── index.html                   # HTML entry
+├── package.json                 # Dependencies & scripts
+├── tsconfig.json                # TypeScript configuration
+├── vite.config.ts               # Vite + Tailwind CSS v4 config
+├── vercel.json                  # Vercel deployment config
+└── README.md
+```
+
+## Input / Output Example — `a^n b^n c^n` (2-Tape TM)
+
+This machine verifies that a string contains equal counts of `a`, `b`, and `c` in order.
+
+### Machine Definition
+
+| Property       | Value                                       |
+|----------------|---------------------------------------------|
+| **Tapes**      | 2                                           |
+| **States**     | q0, q1, q2, q3, q4, q_acc, q_rej            |
+| **Start**      | q0                                          |
+| **Accept**     | q_acc                                       |
+| **Reject**     | q_rej                                       |
+| **Input**      | Tape 0: `aabbcc` · Tape 1: _(blank)_        |
+
+### Transition Table (key rules)
+
+| From  | Read (T0,T1) | To    | Write (T0,T1) | Move (T0,T1) | Description                      |
+|-------|-------------|-------|---------------|---------------|----------------------------------|
+| q0    | a, _        | q0    | a, X          | R, R          | Copy a's as tally marks on T1    |
+| q0    | b, _        | q1    | b, _          | S, L          | End of a's, rewind T1            |
+| q1    | b, _        | q2    | b, _          | S, R          | T1 rewound, start matching b's   |
+| q2    | b, X        | q2    | b, X          | R, R          | Match each b with a tally X      |
+| q2    | c, _        | q3    | c, _          | S, L          | b's matched, rewind T1 for c's   |
+| q3    | c, _        | q4    | c, _          | S, R          | T1 rewound, start matching c's   |
+| q4    | c, X        | q4    | c, X          | R, R          | Match each c with a tally X      |
+| q4    | _, _        | q_acc | _, _          | S, S          | All matched → **ACCEPT**         |
+
+### Execution Trace (Input: `aabbcc`)
+
+```
+Step 0  │ State: q0    │ T0: [a]abbcc  │ T1: [_]        │ Read: a,_  → Write: a,X  → Move: R,R
+Step 1  │ State: q0    │ T0: a[a]bbcc  │ T1: X[_]       │ Read: a,_  → Write: a,X  → Move: R,R
+Step 2  │ State: q0    │ T0: aa[b]bcc  │ T1: XX[_]      │ Read: b,_  → Write: b,_  → Move: S,L
+Step 3  │ State: q1    │ T0: aa[b]bcc  │ T1: X[X]       │ Read: b,X  → Write: b,X  → Move: S,L
+Step 4  │ State: q1    │ T0: aa[b]bcc  │ T1: [X]X       │ (rewind continues...)
+  ...   │              │               │                │ (matching b's, then c's)
+Final   │ State: q_acc │ T0: aabbcc[_] │ T1: XX[_]      │ ✅ ACCEPTED — equal a,b,c counts
+```
+
+> **Key insight**: Tape 1 acts as a counter. The machine tallies `a`'s onto Tape 1, then verifies `b`'s and `c`'s each consume the same number of tallies, proving `n(a) = n(b) = n(c)`.
+
 ## Technology Stack and Tools
 
 This application is built with modern web technologies focused on performance and dynamic visualization:
