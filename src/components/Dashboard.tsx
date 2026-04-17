@@ -10,7 +10,6 @@ import TapeView from './TapeView';
 import TransitionLog from './TransitionLog';
 import DFAVisualization from './DFAVisualization';
 
-import MiniTapeAnimation from './MiniTapeAnimation';
 
 export default function Dashboard() {
   const {
@@ -95,27 +94,18 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Control Center + Mini Animation */}
-        <div className="flex items-start gap-4">
-          <div className="flex-1">
-            <ControlCenter
-              simStatus={simStatus}
-              speed={speed}
-              setSpeed={setSpeed}
-              onPlay={play}
-              onPause={pause}
-              onStepForward={stepForward}
-              onStepBackward={stepBackward}
-              onReset={reset}
-              hasDefinition={!!definition}
-            />
-          </div>
-        </div>
-
-        {/* Interactive TM Animation */}
-        <div className="flex justify-end px-1">
-          <MiniTapeAnimation />
-        </div>
+        {/* Control Center */}
+        <ControlCenter
+          simStatus={simStatus}
+          speed={speed}
+          setSpeed={setSpeed}
+          onPlay={play}
+          onPause={pause}
+          onStepForward={stepForward}
+          onStepBackward={stepBackward}
+          onReset={reset}
+          hasDefinition={!!definition}
+        />
 
         {/* Metrics */}
         <MetricsPanel snapshot={snapshot} simStatus={simStatus} />
