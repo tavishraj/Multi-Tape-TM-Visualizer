@@ -15,7 +15,6 @@ import {
   type EdgeProps,
   BaseEdge,
   getBezierPath,
-  getSmoothStepPath,
   EdgeLabelRenderer,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -221,26 +220,35 @@ function AnimatedEdge({
   const isSelfLoop = (data?.isSelfLoop as boolean) || false;
   const edgeLabel = (data?.label as string) || '';
 
-  // Use bezier path for smooth curves
-  const [edgePath, labelX, labelY] = isSelfLoop
-    ? getSmoothStepPath({
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-        sourcePosition,
-        targetPosition,
-        borderRadius: 20,
-      })
-    : getBezierPath({
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-        sourcePosition,
-        targetPosition,
-        curvature: 0.3,
-      });
+  // For self-loops, create a proper round circular arc
+  // For normal edges, use bezier curves
+  let edgePath: string;
+  let labelX: number;
+  let labelY: number;
+
+  if (isSelfLoop) {
+    // Create a circular self-loop that goes up from the node
+    const loopRadius = 30;
+    const loopHeight = 50;
+    // Source and target are at similar positions for self-loops
+    const cx = (sourceX + targetX) / 2;
+    const cy = Math.min(sourceY, targetY);
+    
+    // Cubic bezier for a nice round loop going upward
+    edgePath = `M ${sourceX} ${sourceY} C ${sourceX - loopRadius} ${cy - loopHeight}, ${targetX + loopRadius} ${cy - loopHeight}, ${targetX} ${targetY}`;
+    labelX = cx;
+    labelY = cy - loopHeight - 12;
+  } else {
+    [edgePath, labelX, labelY] = getBezierPath({
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      sourcePosition,
+      targetPosition,
+      curvature: 0.3,
+    });
+  }
 
   return (
     <>
