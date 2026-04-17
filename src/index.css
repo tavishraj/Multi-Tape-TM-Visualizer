@@ -138,3 +138,141 @@ select option {
   color: #a5f3fc;
   padding: 8px;
 }
+
+/* ──────────────────────────────────────────────
+   MINI TAPE ANIMATION
+   ────────────────────────────────────────────── */
+
+.mini-tape-anim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px 4px;
+  border-radius: 10px;
+  background: rgba(18, 18, 30, 0.5);
+  border: 1px solid rgba(34, 211, 238, 0.08);
+  user-select: none;
+  transition: border-color 0.4s, background 0.4s;
+  max-width: fit-content;
+}
+
+.mini-tape-anim:hover {
+  border-color: rgba(34, 211, 238, 0.25);
+  background: rgba(18, 18, 30, 0.7);
+}
+
+/* Head indicator row */
+.mini-tape-head-row {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+}
+
+.mini-tape-head-slot {
+  width: 26px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.mini-tape-head {
+  color: #22d3ee;
+  animation: head-bob 1.2s ease-in-out infinite;
+  transition: color 0.2s;
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.5));
+}
+
+.mini-tape-head.writing {
+  color: #f472b6;
+  filter: drop-shadow(0 0 8px rgba(244, 114, 182, 0.7));
+  animation: head-write 0.35s ease-in-out;
+}
+
+@keyframes head-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes head-write {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(2px) scale(1.2); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Tape cells */
+.mini-tape-cells {
+  display: flex;
+  gap: 2px;
+}
+
+.mini-tape-cell {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  border-radius: 4px;
+  background: rgba(10, 10, 18, 0.6);
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.6);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mini-tape-cell.active {
+  border-color: rgba(34, 211, 238, 0.5);
+  background: rgba(34, 211, 238, 0.08);
+  color: #22d3ee;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.15), inset 0 0 8px rgba(34, 211, 238, 0.05);
+}
+
+.mini-tape-cell.writing {
+  border-color: rgba(244, 114, 182, 0.6);
+  background: rgba(244, 114, 182, 0.12);
+  color: #f472b6;
+  box-shadow: 0 0 14px rgba(244, 114, 182, 0.25), inset 0 0 10px rgba(244, 114, 182, 0.08);
+  transform: scale(1.08);
+}
+
+/* Label row */
+.mini-tape-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8px;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.35);
+  padding-top: 2px;
+}
+
+.mini-tape-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #22d3ee;
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.4; box-shadow: none; }
+  50% { opacity: 1; box-shadow: 0 0 6px rgba(34, 211, 238, 0.6); }
+}
+
+.mini-tape-dir {
+  color: rgba(34, 211, 238, 0.4);
+  font-size: 10px;
+  transition: color 0.3s;
+}
+
+.mini-tape-anim:hover .mini-tape-label {
+  color: rgba(148, 163, 184, 0.55);
+}
+
+.mini-tape-anim:hover .mini-tape-dir {
+  color: rgba(34, 211, 238, 0.7);
+}

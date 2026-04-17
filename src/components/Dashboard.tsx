@@ -10,6 +10,8 @@ import TapeView from './TapeView';
 import TransitionLog from './TransitionLog';
 import DFAVisualization from './DFAVisualization';
 
+import MiniTapeAnimation from './MiniTapeAnimation';
+
 export default function Dashboard() {
   const {
     snapshot,
@@ -42,7 +44,7 @@ export default function Dashboard() {
       {/* Main content */}
       <div className="relative z-10 flex flex-col w-full min-h-screen p-4 lg:p-6 gap-4">
         {/* Header */}
-        <header className="flex flex-wrap items-center justify-between gap-4 px-2">
+        <header className="flex flex-wrap items-start justify-between gap-4 px-2">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-sm bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
@@ -67,10 +69,13 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <ExampleSelector
-            onSelect={handleSelectExample}
-            currentId={currentExampleId}
-          />
+          <div className="flex flex-col items-end gap-2">
+            <ExampleSelector
+              onSelect={handleSelectExample}
+              currentId={currentExampleId}
+            />
+            <MiniTapeAnimation />
+          </div>
         </header>
 
         {/* Description */}
