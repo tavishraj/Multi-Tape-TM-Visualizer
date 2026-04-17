@@ -44,7 +44,7 @@ export default function Dashboard() {
       {/* Main content */}
       <div className="relative z-10 flex flex-col w-full min-h-screen p-4 lg:p-6 gap-4">
         {/* Header */}
-        <header className="flex flex-wrap items-start justify-between gap-4 px-2">
+        <header className="flex flex-wrap items-center justify-between gap-4 px-2">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-sm bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
@@ -69,12 +69,11 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-4">
             <ExampleSelector
               onSelect={handleSelectExample}
               currentId={currentExampleId}
             />
-            <MiniTapeAnimation />
           </div>
         </header>
 
@@ -96,18 +95,27 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Control Center */}
-        <ControlCenter
-          simStatus={simStatus}
-          speed={speed}
-          setSpeed={setSpeed}
-          onPlay={play}
-          onPause={pause}
-          onStepForward={stepForward}
-          onStepBackward={stepBackward}
-          onReset={reset}
-          hasDefinition={!!definition}
-        />
+        {/* Control Center + Mini Animation */}
+        <div className="flex items-start gap-4">
+          <div className="flex-1">
+            <ControlCenter
+              simStatus={simStatus}
+              speed={speed}
+              setSpeed={setSpeed}
+              onPlay={play}
+              onPause={pause}
+              onStepForward={stepForward}
+              onStepBackward={stepBackward}
+              onReset={reset}
+              hasDefinition={!!definition}
+            />
+          </div>
+        </div>
+
+        {/* Interactive TM Animation */}
+        <div className="flex justify-end px-1">
+          <MiniTapeAnimation />
+        </div>
 
         {/* Metrics */}
         <MetricsPanel snapshot={snapshot} simStatus={simStatus} />
