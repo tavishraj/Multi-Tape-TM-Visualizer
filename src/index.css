@@ -130,6 +130,33 @@ button, select, a, [role="button"], .react-flow__node {
 }
 
 /* ──────────────────────────────────────────────
+   DFA EDGE FLOW ANIMATION
+   ────────────────────────────────────────────── */
+
+@keyframes edgeFlow {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Smooth node transitions on drag */
+.react-flow__node {
+  transition: filter 0.3s ease !important;
+}
+
+.react-flow__node:hover {
+  filter: brightness(1.2) !important;
+}
+
+/* Edge path transitions */
+.react-flow__edge path {
+  transition: stroke 0.3s ease, stroke-width 0.3s ease, filter 0.3s ease;
+}
+
+/* ──────────────────────────────────────────────
    SELECT DROPDOWN STYLING
    ────────────────────────────────────────────── */
 

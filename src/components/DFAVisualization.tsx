@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect, useState } from 'react';
+import { useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -12,9 +12,14 @@ import {
   useEdgesState,
   type NodeProps,
   ReactFlowProvider,
-  ConnectionLineType,
+  type EdgeProps,
+  BaseEdge,
+  getBezierPath,
+  getSmoothStepPath,
+  EdgeLabelRenderer,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import type { TMDefinition } from '../engine/types';
 
@@ -23,7 +28,10 @@ interface Props {
   currentState: string | null;
 }
 
-// Custom node component for states
+/* ─────────────────────────────────────────────────────────────
+   CUSTOM STATE NODE — with floating & breathing animations
+   ───────────────────────────────────────────────────────────── */
+
 function StateNode({ data }: NodeProps) {
   const isActive = data.isActive as boolean;
   const isAccept = data.isAccept as boolean;
@@ -31,66 +39,160 @@ function StateNode({ data }: NodeProps) {
   const isStart = data.isStart as boolean;
   const label = data.label as string;
 
-  let borderColor = 'border-cyan-500/40';
-  let bgColor = 'bg-[#12121e]';
-  let textColor = 'text-cyan-300';
-  let shadow = '';
-  let ring = '';
-
-  if (isActive) {
-    borderColor = 'border-cyan-400';
-    bgColor = 'bg-cyan-500/15';
-    textColor = 'text-cyan-200';
-    shadow = 'shadow-[0_0_25px_rgba(34,211,238,0.5)]';
-  }
-  if (isAccept) {
-    borderColor = isActive ? 'border-green-400' : 'border-green-500/40';
-    bgColor = isActive ? 'bg-green-500/15' : 'bg-[#12121e]';
-    textColor = isActive ? 'text-green-200' : 'text-green-400';
-    shadow = isActive ? 'shadow-[0_0_25px_rgba(74,222,128,0.5)]' : '';
-    ring = 'ring-2 ring-green-500/30 ring-offset-2 ring-offset-[#0a0a0f]';
-  }
-  if (isReject) {
-    borderColor = isActive ? 'border-red-400' : 'border-red-500/40';
-    bgColor = isActive ? 'bg-red-500/15' : 'bg-[#12121e]';
-    textColor = isActive ? 'text-red-200' : 'text-red-400';
-    shadow = isActive ? 'shadow-[0_0_25px_rgba(248,113,113,0.5)]' : '';
-  }
+  // Determine colors based on state type
+  const colors = useMemo(() => {
+    if (isAccept) {
+      return {
+        border: isActive ? '#4ade80' : 'rgba(74,222,128,0.4)',
+        bg: isActive ? 'rgba(74,222,128,0.12)' : 'rgba(18,18,30,0.9)',
+        text: isActive ? '#bbf7d0' : '#4ade80',
+        glow: 'rgba(74,222,128,0.5)',
+        ring: 'rgba(74,222,128,0.25)',
+      };
+    }
+    if (isReject) {
+      return {
+        border: isActive ? '#f87171' : 'rgba(248,113,113,0.4)',
+        bg: isActive ? 'rgba(248,113,113,0.12)' : 'rgba(18,18,30,0.9)',
+        text: isActive ? '#fecaca' : '#f87171',
+        glow: 'rgba(248,113,113,0.5)',
+        ring: 'transparent',
+      };
+    }
+    return {
+      border: isActive ? '#22d3ee' : 'rgba(34,211,238,0.35)',
+      bg: isActive ? 'rgba(34,211,238,0.1)' : 'rgba(18,18,30,0.9)',
+      text: isActive ? '#cffafe' : '#67e8f9',
+      glow: 'rgba(34,211,238,0.5)',
+      ring: 'transparent',
+    };
+  }, [isActive, isAccept, isReject]);
 
   return (
     <div className="relative">
+      {/* Invisible handles for edge connections */}
       <Handle type="target" position={Position.Top} className="!opacity-0 !w-1 !h-1" />
       <Handle type="target" position={Position.Left} id="left-target" className="!opacity-0 !w-1 !h-1" />
       <Handle type="target" position={Position.Bottom} id="bottom-target" className="!opacity-0 !w-1 !h-1" />
       <Handle type="target" position={Position.Right} id="right-target" className="!opacity-0 !w-1 !h-1" />
-      <div
-        className={`
-          flex items-center justify-center
-          w-[68px] h-[68px] rounded-full border-2
-          ${borderColor} ${bgColor} ${textColor} ${shadow} ${ring}
-          font-mono text-[11px] font-bold
-          transition-all duration-300
-        `}
-        style={{ fontFamily: '"Fira Code", monospace' }}
+
+      <motion.div
+        initial={false}
+        animate={{
+          scale: isActive ? 1.12 : 1,
+          boxShadow: isActive
+            ? `0 0 30px ${colors.glow}, 0 0 60px ${colors.glow}40`
+            : `0 0 0px transparent`,
+        }}
+        transition={{
+          type: 'spring',
+          stiffness: 300,
+          damping: 20,
+          mass: 0.8,
+        }}
+        style={{
+          width: 72,
+          height: 72,
+          borderRadius: '50%',
+          border: `2px solid ${colors.border}`,
+          background: colors.bg,
+          color: colors.text,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: '"Fira Code", monospace',
+          fontSize: 12,
+          fontWeight: 700,
+          position: 'relative',
+          backdropFilter: 'blur(8px)',
+        }}
       >
         {label}
-        {isActive && (
-          <div
-            className="absolute inset-0 rounded-full border-2 border-cyan-400"
+
+        {/* Breathing animation for idle nodes */}
+        <motion.div
+          style={{
+            position: 'absolute',
+            inset: -3,
+            borderRadius: '50%',
+            border: `1px solid ${colors.border}`,
+            opacity: 0,
+          }}
+          animate={{
+            opacity: [0, 0.4, 0],
+            scale: [1, 1.08, 1],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: Math.random() * 2,
+          }}
+        />
+
+        {/* Active ping ripple */}
+        <AnimatePresence>
+          {isActive && (
+            <motion.div
+              initial={{ scale: 1, opacity: 0.5 }}
+              animate={{ scale: 1.6, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: 'easeOut',
+              }}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                border: `2px solid ${colors.border}`,
+              }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Accept state double ring */}
+        {isAccept && (
+          <motion.div
             style={{
-              animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
-              opacity: 0.2,
+              position: 'absolute',
+              inset: -6,
+              borderRadius: '50%',
+              border: `2px solid ${colors.ring}`,
+            }}
+            animate={{
+              boxShadow: isActive
+                ? [
+                    `0 0 8px ${colors.glow}`,
+                    `0 0 20px ${colors.glow}`,
+                    `0 0 8px ${colors.glow}`,
+                  ]
+                : `0 0 0px transparent`,
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'easeInOut',
             }}
           />
         )}
-      </div>
+      </motion.div>
+
+      {/* Start state arrow */}
       {isStart && (
-        <div className="absolute -left-8 top-1/2 -translate-y-1/2">
-          <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
-            <polygon points="0,0 22,9 0,18" fill="rgba(34,211,238,0.7)" />
+        <motion.div
+          className="absolute -left-9 top-1/2 -translate-y-1/2"
+          animate={{ x: [0, 3, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <svg width="24" height="20" viewBox="0 0 24 20" fill="none">
+            <polygon points="0,0 24,10 0,20" fill="rgba(34,211,238,0.7)" />
+            <polygon points="0,0 24,10 0,20" fill="none" stroke="rgba(34,211,238,0.3)" strokeWidth="1" />
           </svg>
-        </div>
+        </motion.div>
       )}
+
       <Handle type="source" position={Position.Top} id="top-source" className="!opacity-0 !w-1 !h-1" />
       <Handle type="source" position={Position.Right} className="!opacity-0 !w-1 !h-1" />
       <Handle type="source" position={Position.Bottom} id="bottom-source" className="!opacity-0 !w-1 !h-1" />
@@ -99,12 +201,127 @@ function StateNode({ data }: NodeProps) {
   );
 }
 
-const nodeTypes = { stateNode: StateNode };
+/* ─────────────────────────────────────────────────────────────
+   CUSTOM ANIMATED EDGE — with flow animation & glow
+   ───────────────────────────────────────────────────────────── */
 
-/**
- * Compute a hierarchical BFS layout.
- * Keep terminal states near their natural layer but offset vertically.
- */
+function AnimatedEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  data,
+  markerEnd,
+  style,
+}: EdgeProps) {
+  const isActive = (data?.isActive as boolean) || false;
+  const isSelfLoop = (data?.isSelfLoop as boolean) || false;
+  const edgeLabel = (data?.label as string) || '';
+
+  // Use bezier path for smooth curves
+  const [edgePath, labelX, labelY] = isSelfLoop
+    ? getSmoothStepPath({
+        sourceX,
+        sourceY,
+        targetX,
+        targetY,
+        sourcePosition,
+        targetPosition,
+        borderRadius: 20,
+      })
+    : getBezierPath({
+        sourceX,
+        sourceY,
+        targetX,
+        targetY,
+        sourcePosition,
+        targetPosition,
+        curvature: 0.3,
+      });
+
+  return (
+    <>
+      {/* Glow layer behind the edge when active */}
+      {isActive && (
+        <BaseEdge
+          id={`${id}-glow`}
+          path={edgePath}
+          style={{
+            stroke: (style?.stroke as string) || '#22d3ee',
+            strokeWidth: 8,
+            filter: 'blur(6px)',
+            opacity: 0.3,
+          }}
+        />
+      )}
+
+      {/* Main edge */}
+      <BaseEdge
+        id={id}
+        path={edgePath}
+        markerEnd={markerEnd}
+        style={{
+          ...style,
+          strokeDasharray: isActive ? '8 4' : 'none',
+          animation: isActive ? 'edgeFlow 0.8s linear infinite' : 'none',
+        }}
+      />
+
+      {/* Edge label rendered in HTML for better styling */}
+      <EdgeLabelRenderer>
+        <div
+          style={{
+            position: 'absolute',
+            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+            pointerEvents: 'all',
+          }}
+        >
+          <motion.div
+            initial={false}
+            animate={{
+              scale: isActive ? 1.05 : 1,
+              opacity: 1,
+            }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            style={{
+              padding: '3px 10px',
+              borderRadius: 6,
+              background: isActive ? 'rgba(12,12,22,0.97)' : 'rgba(12,12,22,0.92)',
+              border: `1.5px solid ${
+                isActive
+                  ? 'rgba(34,211,238,0.5)'
+                  : isSelfLoop
+                  ? 'rgba(168,85,247,0.2)'
+                  : 'rgba(100,116,139,0.2)'
+              }`,
+              fontFamily: '"Fira Code", monospace',
+              fontSize: 10,
+              fontWeight: isActive ? 700 : 500,
+              color: isActive ? '#67e8f9' : '#94a3b8',
+              whiteSpace: 'nowrap',
+              boxShadow: isActive
+                ? '0 0 12px rgba(34,211,238,0.2)'
+                : 'none',
+            }}
+          >
+            {edgeLabel}
+          </motion.div>
+        </div>
+      </EdgeLabelRenderer>
+    </>
+  );
+}
+
+const nodeTypes = { stateNode: StateNode };
+const edgeTypes = { animated: AnimatedEdge };
+
+/* ─────────────────────────────────────────────────────────────
+   LAYOUT ALGORITHM — improved spacing with radial influence
+   ───────────────────────────────────────────────────────────── */
+
 function computeLayout(
   states: string[],
   transitions: TMDefinition['transitions'],
@@ -145,7 +362,7 @@ function computeLayout(
     layers.push(layer);
   }
 
-  // Add unreachable states to the last layer
+  // Add unreachable states
   for (const s of states) {
     if (!visited.has(s)) {
       if (layers.length === 0) layers.push([]);
@@ -153,17 +370,13 @@ function computeLayout(
     }
   }
 
-  // Keep natural BFS layers — DON'T forcefully move terminals
-  // This prevents super-long edges across the entire diagram
+  // Layout parameters — more generous spacing
+  const LAYER_SPACING_X = 240;
+  const NODE_SPACING_Y = 150;
+  const PADDING_LEFT = 140;
+  const PADDING_TOP = 120;
 
-  // Layout parameters
-  const LAYER_SPACING_X = 200;
-  const NODE_SPACING_Y = 130;
-  const PADDING_LEFT = 120;
-  const PADDING_TOP = 100;
-
-  // Find total height needed per layer and center vertically
-  const maxLayerSize = Math.max(...layers.map(l => l.length));
+  const maxLayerSize = Math.max(...layers.map((l) => l.length));
   const totalHeight = maxLayerSize * NODE_SPACING_Y;
 
   for (let layerIdx = 0; layerIdx < layers.length; layerIdx++) {
@@ -172,8 +385,10 @@ function computeLayout(
     const offsetY = (totalHeight - layerHeight) / 2;
 
     for (let nodeIdx = 0; nodeIdx < layer.length; nodeIdx++) {
+      // Add slight stagger for visual interest
+      const staggerX = nodeIdx % 2 === 0 ? 0 : 15;
       positions.set(layer[nodeIdx], {
-        x: layerIdx * LAYER_SPACING_X + PADDING_LEFT,
+        x: layerIdx * LAYER_SPACING_X + PADDING_LEFT + staggerX,
         y: nodeIdx * NODE_SPACING_Y + offsetY + PADDING_TOP,
       });
     }
@@ -182,11 +397,27 @@ function computeLayout(
   return positions;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   MAIN COMPONENT
+   ───────────────────────────────────────────────────────────── */
+
 function DFAVisualizationInner({ definition, currentState }: Props) {
   const flowRef = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [exporting, setExporting] = useState(false);
+  const [prevState, setPrevState] = useState<string | null>(null);
+  const [activeEdgeKey, setActiveEdgeKey] = useState<string | null>(null);
+
+  // Track the previously active edge for highlight decay
+  useEffect(() => {
+    if (currentState && currentState !== prevState && prevState) {
+      setActiveEdgeKey(`${prevState}|${currentState}`);
+      const timer = setTimeout(() => setActiveEdgeKey(null), 800);
+      return () => clearTimeout(timer);
+    }
+    setPrevState(currentState);
+  }, [currentState]);
 
   // Build nodes and edges from definition
   useEffect(() => {
@@ -206,7 +437,7 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
     );
 
     const newNodes: Node[] = states
-      .filter(state => positions.has(state))
+      .filter((state) => positions.has(state))
       .map((state) => ({
         id: state,
         type: 'stateNode',
@@ -224,8 +455,8 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
     const edgeMap = new Map<string, string[]>();
     for (const t of definition.transitions) {
       const key = `${t.fromState}|${t.toState}`;
-      const readStr = t.readSymbols.map(s => s === '_' ? '␣' : s).join(',');
-      const writeStr = t.writeSymbols.map(s => s === '_' ? '␣' : s).join(',');
+      const readStr = t.readSymbols.map((s) => (s === '_' ? '␣' : s)).join(',');
+      const writeStr = t.writeSymbols.map((s) => (s === '_' ? '␣' : s)).join(',');
       const dirStr = t.directions.join(',');
       const label = `${readStr}→${writeStr},${dirStr}`;
       if (!edgeMap.has(key)) edgeMap.set(key, []);
@@ -241,8 +472,9 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
       const [from, to] = key.split('|');
       const isSelfLoop = from === to;
       const isActive = from === currentState;
+      const isTraversed = key === activeEdgeKey;
 
-      // Compact label: show count if too many
+      // Compact label
       let combinedLabel: string;
       if (labels.length > 3) {
         combinedLabel = `${labels.length} transitions`;
@@ -260,7 +492,7 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
       const isFirstOfPair = !processedPairs.has(pairKey);
       if (hasBidi) processedPairs.add(pairKey);
 
-      // Determine edge handles for bidirectional edges
+      // Determine handles for bidirectional edges
       let sourceHandle: string | undefined;
       let targetHandle: string | undefined;
       if (isSelfLoop) {
@@ -271,41 +503,35 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
         targetHandle = 'bottom-target';
       }
 
+      const edgeActive = isActive || isTraversed;
+      const edgeColor = edgeActive
+        ? '#22d3ee'
+        : isSelfLoop
+        ? 'rgba(168,85,247,0.4)'
+        : 'rgba(100,116,139,0.3)';
+
       newEdges.push({
         id: `e-${edgeIdx++}`,
         source: from,
         target: to,
-        type: 'smoothstep',
-        animated: false,
-        label: combinedLabel,
-        labelBgPadding: [12, 6] as [number, number],
-        labelBgBorderRadius: 6,
-        labelBgStyle: {
-          fill: '#0c0c16',
-          fillOpacity: 0.95,
-          stroke: isActive ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.25)',
-          strokeWidth: 1.5,
-        },
-        labelStyle: {
-          fontFamily: '"Fira Code", monospace',
-          fontSize: 11,
-          fill: isActive ? '#67e8f9' : '#94a3b8',
-          fontWeight: isActive ? 700 : 500,
+        type: 'animated',
+        data: {
+          isActive: edgeActive,
+          isSelfLoop,
+          label: combinedLabel,
         },
         style: {
-          stroke: isActive
-            ? '#22d3ee'
-            : isSelfLoop
-            ? 'rgba(168,85,247,0.35)'
-            : 'rgba(100,116,139,0.3)',
-          strokeWidth: isActive ? 3 : 1.5,
-          filter: isActive ? 'drop-shadow(0 0 5px rgba(34,211,238,0.7))' : 'none',
+          stroke: edgeColor,
+          strokeWidth: edgeActive ? 2.5 : 1.5,
+          filter: edgeActive
+            ? 'drop-shadow(0 0 4px rgba(34,211,238,0.6))'
+            : 'none',
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: isActive ? '#22d3ee' : 'rgba(100,116,139,0.45)',
-          width: 14,
-          height: 14,
+          color: edgeActive ? '#22d3ee' : 'rgba(100,116,139,0.4)',
+          width: 16,
+          height: 16,
         },
         ...(sourceHandle ? { sourceHandle } : {}),
         ...(targetHandle ? { targetHandle } : {}),
@@ -314,9 +540,9 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [definition, currentState, setNodes, setEdges]);
+  }, [definition, currentState, activeEdgeKey, setNodes, setEdges]);
 
-  // Update only active highlight without full rebuild
+  // Lightweight update for active state changes
   useEffect(() => {
     if (!definition || !currentState) return;
     setNodes((nds) =>
@@ -329,37 +555,37 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
       eds.map((e) => {
         const isActive = e.source === currentState;
         const isSelfLoop = e.source === e.target;
+        const isTraversed = `${e.source}|${e.target}` === activeEdgeKey;
+        const edgeActive = isActive || isTraversed;
+        const edgeColor = edgeActive
+          ? '#22d3ee'
+          : isSelfLoop
+          ? 'rgba(168,85,247,0.4)'
+          : 'rgba(100,116,139,0.3)';
+
         return {
           ...e,
-          animated: false,
-          labelStyle: {
-            ...(e.labelStyle as object),
-            fill: isActive ? '#67e8f9' : '#94a3b8',
-            fontWeight: isActive ? 700 : 500,
-          },
-          labelBgStyle: {
-            ...(e.labelBgStyle as object),
-            stroke: isActive ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.25)',
+          data: {
+            ...e.data,
+            isActive: edgeActive,
           },
           style: {
-            stroke: isActive
-              ? '#22d3ee'
-              : isSelfLoop
-              ? 'rgba(168,85,247,0.35)'
-              : 'rgba(100,116,139,0.3)',
-            strokeWidth: isActive ? 3 : 1.5,
-            filter: isActive ? 'drop-shadow(0 0 5px rgba(34,211,238,0.7))' : 'none',
+            stroke: edgeColor,
+            strokeWidth: edgeActive ? 2.5 : 1.5,
+            filter: edgeActive
+              ? 'drop-shadow(0 0 4px rgba(34,211,238,0.6))'
+              : 'none',
           },
           markerEnd: {
             type: MarkerType.ArrowClosed,
-            color: isActive ? '#22d3ee' : 'rgba(100,116,139,0.45)',
-            width: 14,
-            height: 14,
+            color: edgeActive ? '#22d3ee' : 'rgba(100,116,139,0.4)',
+            width: 16,
+            height: 16,
           },
         };
       })
     );
-  }, [currentState, setNodes, setEdges]);
+  }, [currentState, activeEdgeKey, setNodes, setEdges]);
 
   const handleExport = useCallback(async () => {
     if (!flowRef.current) return;
@@ -423,17 +649,17 @@ function DFAVisualizationInner({ definition, currentState }: Props) {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
-          connectionLineType={ConnectionLineType.SmoothStep}
+          edgeTypes={edgeTypes}
           fitView
-          fitViewOptions={{ padding: 0.35, maxZoom: 1.1 }}
+          fitViewOptions={{ padding: 0.4, maxZoom: 1.1 }}
           minZoom={0.2}
           maxZoom={2.5}
           proOptions={{ hideAttribution: true }}
           defaultEdgeOptions={{
-            type: 'smoothstep',
+            type: 'animated',
           }}
         >
-          <Background color="rgba(34,211,238,0.04)" gap={25} size={1} />
+          <Background color="rgba(34,211,238,0.03)" gap={30} size={1} />
           <Controls
             showInteractive={false}
             className="!bg-[#12121e] !border-cyan-500/20 !shadow-lg"
